@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bwastartup/user"
 	"fmt"
 	"log"
 	"os"
@@ -20,6 +21,10 @@ func InitDB() (*gorm.DB, error) {
 
 	if err != nil {
 		log.Fatal(err.Error())
+		return nil, err
+	}
+
+	if err := DB.AutoMigrate(&user.User{}); err != nil {
 		return nil, err
 	}
 
