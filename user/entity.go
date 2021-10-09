@@ -18,3 +18,8 @@ type RegisterInput struct {
 	Email      string `binding:"required,email"`
 	Password   string `binding:"required"`
 }
+
+type LoginInput struct {
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required"`
+}
