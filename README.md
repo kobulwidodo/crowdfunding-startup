@@ -1,4 +1,4 @@
-# Crowdfunding Project (On Going)
+# Crowdfunding API Project (On Going)
 This is just my personal project. Use Golang and MySQL
 ## Framework
 - Configuration : GoDotEnv
