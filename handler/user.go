@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bwastartup/auth"
 	"bwastartup/helper"
 	"bwastartup/user"
 	"fmt"
@@ -11,10 +12,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService: userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -32,8 +34,14 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	response := helper.ApiResponse("Akun berhasil dibuat", http.StatusOK, "sukses", user.FormatterUser(newUser, "tokentokentoken"))
+	token, err := h.authService.GenerateToken(int(newUser.ID))
+	if err != nil {
+		response := helper.ApiResponse("Terjadi kesalahan dengan token", http.StatusInternalServerError, "gagal", nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
 
+	response := helper.ApiResponse("Akun berhasil dibuat", http.StatusOK, "sukses", user.FormatterUser(newUser, token))
 	c.JSON(http.StatusOK, response)
 	return
 }
@@ -55,7 +63,14 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	response := helper.ApiResponse("Berhasil login", http.StatusOK, "sukses", user.FormatterUser(userLoggedin, "tokentokentoken"))
+	token, err := h.authService.GenerateToken(int(userLoggedin.ID))
+	if err != nil {
+		response := helper.ApiResponse("Terjadi kesalahan dengan token", http.StatusInternalServerError, "gagal", nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	response := helper.ApiResponse("Berhasil login", http.StatusOK, "sukses", user.FormatterUser(userLoggedin, token))
 	c.JSON(http.StatusOK, response)
 }
 
