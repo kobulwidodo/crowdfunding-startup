@@ -11,6 +11,7 @@ type Service interface {
 	Login(input LoginInput) (User, error)
 	IsEmailAvailable(input EmailCheckInput) (bool, error)
 	SaveAvatar(id int, filelocation string) (User, error)
+	GetUserById(id int) (User, error)
 }
 
 type service struct {
@@ -90,4 +91,18 @@ func (s *service) SaveAvatar(id int, filelocation string) (User, error) {
 	}
 
 	return updatedUser, nil
+}
+
+func (s *service) GetUserById(id int) (User, error) {
+	var user User
+	user, err := s.repository.FindById(id)
+	if err != nil {
+		return user, err
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("User tidak ditemukan dengan ID tersebut")
+	}
+
+	return user, nil
 }
