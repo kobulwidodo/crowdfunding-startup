@@ -3,6 +3,7 @@ package handler
 import (
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -81,4 +82,33 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 
 	response := helper.ApiResponse(metaMsg, http.StatusOK, "sukses", gin.H{"is_available": isAvail})
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		response := helper.ApiResponse("Gagal mendapatkan file avatar", http.StatusUnprocessableEntity, "gagal", gin.H{"is_uploaded": false})
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	userId := 1
+	path := fmt.Sprintf("images/%d-%s", userId, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		response := helper.ApiResponse("Gagal mengunggah avatar", http.StatusInternalServerError, "gagal", gin.H{"is_uploaded": false})
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	_, err = h.userService.SaveAvatar(userId, path)
+	if err != nil {
+		response := helper.ApiResponse("Gagal mengubah avatar", http.StatusInternalServerError, "gagal", gin.H{"is_uploaded": false})
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	response := helper.ApiResponse("Berhasil merubah avatar", http.StatusOK, "sukses", gin.H{"is_uploaded": true})
+	c.JSON(http.StatusInternalServerError, response)
 }
