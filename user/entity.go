@@ -1,8 +1,6 @@
 package user
 
 import (
-	"bwastartup/campaign"
-
 	"gorm.io/gorm"
 )
 
@@ -14,7 +12,6 @@ type User struct {
 	PasswordHash   string
 	AvatarFileName string
 	Role           string
-	Campaigns      []campaign.Campaign
 }
 
 type RegisterInput struct {
