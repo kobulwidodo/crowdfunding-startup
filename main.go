@@ -2,6 +2,7 @@ package main
 
 import (
 	"bwastartup/auth"
+	"bwastartup/campaign"
 	"bwastartup/config"
 	"bwastartup/handler"
 	"bwastartup/helper"
@@ -36,13 +37,16 @@ func main() {
 
 	// Setup Repository
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
 
 	// Setup Service
 	userSevice := user.NewService(userRepository)
 	authService := auth.NewJwtService()
+	campaignService := campaign.NewService(campaignRepository)
 
 	// Setup Handler
 	userHandler := handler.NewUserHandler(userSevice, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	r := gin.Default()
 
@@ -52,6 +56,8 @@ func main() {
 		api.POST("/sessions", userHandler.Login)
 		api.POST("/email_checker", userHandler.CheckEmailAvailability)
 		api.POST("/avatars", authMiddleware(authService, userSevice), userHandler.UploadAvatar)
+
+		api.GET("/campaigns", campaignHandler.GetCampaigns)
 	}
 
 	r.Run()
