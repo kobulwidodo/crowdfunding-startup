@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bwastartup/campaign"
 	"bwastartup/user"
 	"fmt"
 	"log"
@@ -24,7 +25,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := DB.AutoMigrate(&user.User{}); err != nil {
+	if err := DB.AutoMigrate(&user.User{}, &campaign.Campaign{}, &campaign.CampaignImage{}); err != nil {
 		return nil, err
 	}
 
