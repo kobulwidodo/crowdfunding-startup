@@ -3,6 +3,7 @@ package handler
 import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
+	"bwastartup/user"
 	"net/http"
 	"strconv"
 
@@ -53,4 +54,29 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 
 	response := helper.ApiResponse("Sukses mendapatkan Campaign", http.StatusOK, "sukses", campaignRes)
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *campaignHandler) CreateCampaign(c *gin.Context) {
+	var cInput campaign.CampaignInput
+	err := c.ShouldBindJSON(&cInput)
+	if err != nil {
+		response := helper.ApiResponse("Harap isi semua input", http.StatusUnprocessableEntity, "gagal", helper.FormatBindError(err))
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	userLoggedin := c.MustGet("userLoggedin").(user.User)
+	cInput.User = userLoggedin
+
+	var newCampaign campaign.Campaign
+	newCampaign, err = h.campaignService.CreateCampaign(cInput)
+	if err != nil {
+		response := helper.ApiResponse("Gagal menambah campaign baru", http.StatusInternalServerError, "gagal", nil)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	response := helper.ApiResponse("Berhasil membuat campaign baru", http.StatusOK, "sukses", campaign.CampaignFormatter(newCampaign))
+	c.JSON(http.StatusOK, response)
+	return
 }
