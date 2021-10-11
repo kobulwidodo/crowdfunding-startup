@@ -50,6 +50,7 @@ func main() {
 
 	r := gin.Default()
 
+	r.Static("/images", "./images")
 	api := r.Group("/api")
 	{
 		api.POST("/users", userHandler.RegisterUser)
@@ -58,6 +59,7 @@ func main() {
 		api.POST("/avatars", authMiddleware(authService, userSevice), userHandler.UploadAvatar)
 
 		api.GET("/campaigns", campaignHandler.GetCampaigns)
+		api.GET("/campaigns/:id", campaignHandler.GetCampaign)
 	}
 
 	r.Run()

@@ -1,7 +1,10 @@
 package campaign
 
+import "errors"
+
 type Service interface {
 	GetCampaigns(userId uint) ([]Campaign, error)
+	GetCampaignById(input CampaignDetailInput) (Campaign, error)
 }
 
 type service struct {
@@ -29,4 +32,18 @@ func (s *service) GetCampaigns(userId uint) ([]Campaign, error) {
 	}
 
 	return campaings, nil
+}
+
+func (s *service) GetCampaignById(input CampaignDetailInput) (Campaign, error) {
+	var campaign Campaign
+	campaign, err := s.repository.FindById(uint(input.Id))
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.ID == 0 {
+		return campaign, errors.New("Tidak dapat mendapatkan dengan id tersebut")
+	}
+
+	return campaign, nil
 }

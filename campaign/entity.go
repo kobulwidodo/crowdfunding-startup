@@ -1,6 +1,10 @@
 package campaign
 
-import "gorm.io/gorm"
+import (
+	"bwastartup/user"
+
+	"gorm.io/gorm"
+)
 
 type Campaign struct {
 	gorm.Model
@@ -14,6 +18,7 @@ type Campaign struct {
 	CurrentAmount    int
 	Slug             string
 	CampaignImages   []CampaignImage
+	User             user.User
 }
 
 type CampaignImage struct {
@@ -21,4 +26,8 @@ type CampaignImage struct {
 	CampaignId uint
 	FileName   string
 	IsPrimary  int
+}
+
+type CampaignDetailInput struct {
+	Id int `uri:"id" binding:"required"`
 }
