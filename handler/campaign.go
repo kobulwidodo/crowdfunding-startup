@@ -80,3 +80,33 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 	return
 }
+
+func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
+	var input campaign.CampaignDetailInput
+	err := c.ShouldBindUri(&input)
+	if err != nil {
+		response := helper.ApiResponse("ID tidak tersedia", http.StatusBadRequest, "gagal", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var cInput campaign.CampaignInput
+	err = c.ShouldBindJSON(&cInput)
+	if err != nil {
+		response := helper.ApiResponse("Harap isi semua input", http.StatusUnprocessableEntity, "gagal", helper.FormatBindError(err))
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	userLoggedin := c.MustGet("userLoggedin").(user.User)
+	cInput.User = userLoggedin
+
+	updatedCampaign, err := h.campaignService.UpdateCampaign(input, cInput)
+	if err != nil {
+		response := helper.ApiResponse("Gagal mengupdate campaign", http.StatusBadRequest, "gagal", err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.ApiResponse("Berhasil mengubah campaign", http.StatusOK, "sukses", campaign.CampaignFormatter(updatedCampaign))
+	c.JSON(http.StatusOK, response)
+}

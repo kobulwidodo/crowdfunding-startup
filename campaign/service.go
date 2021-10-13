@@ -11,6 +11,7 @@ type Service interface {
 	GetCampaigns(userId uint) ([]Campaign, error)
 	GetCampaignById(input CampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CampaignInput) (Campaign, error)
+	UpdateCampaign(inputId CampaignDetailInput, inputData CampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -73,4 +74,28 @@ func (s *service) CreateCampaign(input CampaignInput) (Campaign, error) {
 	}
 
 	return campaign, nil
+}
+
+func (s *service) UpdateCampaign(inputId CampaignDetailInput, inputData CampaignInput) (Campaign, error) {
+	campaign, err := s.repository.FindById(uint(inputId.Id))
+	if err != nil {
+		return campaign, err
+	}
+
+	if campaign.User.ID != inputData.User.ID {
+		return campaign, errors.New("Tidak memiliki akses")
+	}
+
+	campaign.Name = inputData.Name
+	campaign.ShortDescription = inputData.ShortDescription
+	campaign.Description = inputData.Description
+	campaign.GoalAmount = inputData.GoalAmount
+	campaign.Perks = inputData.Perks
+
+	newCampaign, err := s.repository.Update(campaign)
+	if err != nil {
+		return campaign, err
+	}
+
+	return newCampaign, nil
 }
