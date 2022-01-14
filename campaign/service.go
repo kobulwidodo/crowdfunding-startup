@@ -12,6 +12,7 @@ type Service interface {
 	GetCampaignById(input CampaignDetailInput) (Campaign, error)
 	CreateCampaign(input CampaignInput) (Campaign, error)
 	UpdateCampaign(inputId CampaignDetailInput, inputData CampaignInput) (Campaign, error)
+	SaveCampaignImage(input CampaignImageInput, fileLocation string) (CampaignImage, error)
 }
 
 type service struct {
@@ -98,4 +99,27 @@ func (s *service) UpdateCampaign(inputId CampaignDetailInput, inputData Campaign
 	}
 
 	return newCampaign, nil
+}
+
+func (s *service) SaveCampaignImage(input CampaignImageInput, fileLocation string) (CampaignImage, error) {
+	isPrimary := 0
+	if input.IsPrimary {
+		if _, err := s.repository.MarkAllImagesAsNonPrimary(input.CampaignId); err != nil {
+			return CampaignImage{}, err
+		}
+		isPrimary = 1
+	}
+
+	campaignImage := CampaignImage{
+		CampaignId: input.CampaignId,
+		FileName:   fileLocation,
+		IsPrimary:  isPrimary,
+	}
+
+	newImage, err := s.repository.CreateImage(campaignImage)
+	if err != nil {
+		return newImage, err
+	}
+
+	return newImage, nil
 }
