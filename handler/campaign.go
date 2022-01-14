@@ -4,6 +4,7 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -109,4 +110,45 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 
 	response := helper.ApiResponse("Berhasil mengubah campaign", http.StatusOK, "sukses", campaign.CampaignFormatter(updatedCampaign))
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	var input campaign.CampaignImageInput
+
+	if err := c.ShouldBind(&input); err != nil {
+		response := helper.ApiResponse("Gagal mengunggah gambar", http.StatusBadRequest, "gagal", helper.FormatBindError(err))
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Gagal mendapatkan gambar", http.StatusBadRequest, "gagal", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userLoggedin := c.MustGet("userLoggedin").(user.User)
+	userId := userLoggedin.ID
+	path := fmt.Sprintf("images/%d-%s", userId, file.Filename)
+
+	if err := c.SaveUploadedFile(file, path); err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Gagal menyimpan gambar", http.StatusBadRequest, "gagal", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if _, err := h.campaignService.SaveCampaignImage(input, path); err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Gagal mengalokasikan gambar", http.StatusInternalServerError, "gagal", data)
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helper.ApiResponse("Berhasil mengunggah gambar", http.StatusOK, "sukses", data)
+	c.JSON(http.StatusOK, response)
+	return
 }
