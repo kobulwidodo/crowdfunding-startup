@@ -102,6 +102,13 @@ func (s *service) UpdateCampaign(inputId CampaignDetailInput, inputData Campaign
 }
 
 func (s *service) SaveCampaignImage(input CampaignImageInput, fileLocation string) (CampaignImage, error) {
+	campaign, err := s.repository.FindById(input.CampaignId)
+	if err != nil {
+		return CampaignImage{}, err
+	}
+	if campaign.UserId != input.User.ID {
+		return CampaignImage{}, errors.New("Tidak memiliki akses")
+	}
 	isPrimary := 0
 	if input.IsPrimary {
 		if _, err := s.repository.MarkAllImagesAsNonPrimary(input.CampaignId); err != nil {

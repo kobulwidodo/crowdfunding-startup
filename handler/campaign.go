@@ -6,6 +6,7 @@ import (
 	"bwastartup/user"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -140,7 +141,10 @@ func (h *campaignHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
+	input.User = userLoggedin
+
 	if _, err := h.campaignService.SaveCampaignImage(input, path); err != nil {
+		os.Remove(path)
 		data := gin.H{"is_uploaded": false}
 		response := helper.ApiResponse("Gagal mengalokasikan gambar", http.StatusInternalServerError, "gagal", data)
 		c.JSON(http.StatusInternalServerError, response)
