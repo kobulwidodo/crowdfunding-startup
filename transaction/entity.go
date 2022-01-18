@@ -14,6 +14,10 @@ type Transaction struct {
 	Code       string
 	CampaignId uint
 	UserId     uint
-	Campaign   campaign.Campaign
 	User       user.User
+	Campaign   campaign.Campaign
+}
+
+type GetTransactionByCampaignIdInput struct {
+	Id uint `uri:"id" binding:"required"`
 }
